@@ -1,10 +1,17 @@
-import type { Server } from "http";
-import { createServer } from "http";
-import express from "express";
+import Database from 'better-sqlite3';
+import bodyparser from 'body-parser';
+import express from 'express';
+import { openDb } from './db/database';
+import { errorHandler } from './middleware/errorHandler';
+import { logger } from './middleware/logger';
 
 const app = express();
-const server: Server = createServer(app);
+app.use(bodyparser.json());
+app.use(logger);
 
-server.listen(3000, () => {
-  console.log("Server is running on port 3000");
+export const db: Database.Database = openDb();
+
+app.use(errorHandler);
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
 });
