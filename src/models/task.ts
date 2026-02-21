@@ -3,8 +3,15 @@ import { UUID } from 'node:crypto';
 export type Task = {
   id: UUID;
   title: string;
-  description: string;
+  description?: string;
   completed: boolean;
   createdAt: Date;
-  keywords?: string[];
+};
+
+export type TaskParam = {
+  id: UUID;
+};
+
+export type TaskSearchParam = {
+  content: string;
 };
