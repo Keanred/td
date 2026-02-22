@@ -1,17 +1,19 @@
 import { UUID } from 'node:crypto';
 import { UUIDTypes, v4 as uuidV4 } from 'uuid';
-import { editTask, getTask, getTaskByDescription, getTaskByTitle, getTasks, insertTask } from '../db/tasks';
+import { deleteTask, editTask, getTask, getTaskByDescription, getTaskByTitle, getTasks, insertTask } from '../db/tasks';
 import { db } from '../main';
 import { Task } from '../models/task';
 
 export const fetchTaskById = (id: UUIDTypes): Task => {
-  getTask(db, id);
-  return task;
+  const stringId = id.toString();
+  const result = getTask(db, stringId);
+  return result;
 };
 
 export const fetchTasks = (): Task[] => {
-  getTasks(db);
-  return tasks;
+  const result = getTasks(db);
+  console.log(result);
+  return result;
 };
 
 export const searchTasks = (content: string): Task[] => {
@@ -25,7 +27,7 @@ export const updateTask = (): Task => {
   return task;
 };
 
-export const deleteTask = (id: UUIDTypes) => {
+export const deleteTaskById = (id: UUIDTypes) => {
   deleteTask(db, id);
   return task;
 };

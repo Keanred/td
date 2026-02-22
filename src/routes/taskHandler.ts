@@ -2,7 +2,7 @@ import { RequestHandler, Router } from 'express';
 import { validate } from 'uuid';
 import { OperationResult } from '../models/result';
 import { CreateTaskResponse, ErrorResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
-import { createTask, deleteTask, fetchTaskById, fetchTasks, searchTasks } from '../services/taskService';
+import { createTask, deleteTaskById, fetchTaskById, fetchTasks, searchTasks } from '../services/taskService';
 
 export const taskRouter = Router();
 
@@ -54,7 +54,7 @@ const deleteTaskHandler: RequestHandler<TaskParam, ErrorResponse> = (req, res) =
   if (!isUuid(id)) {
     return res.status(400).send();
   }
-  const result = deleteTask(id);
+  const result = deleteTaskById(id);
 
   if (result === OperationResult.OK) {
     return res.status(200).send();
