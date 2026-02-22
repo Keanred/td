@@ -2,7 +2,7 @@ import { RequestHandler, Router } from 'express';
 import { validate } from 'uuid';
 import { OperationResult } from '../models/result';
 import { CreateTaskResponse, ErrorResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
-import { createTask, deleteTaskById, fetchTaskById, fetchTasks, searchTasks } from '../services/taskService';
+import { createTask, deleteTaskById, fetchTaskById, fetchTasks, searchTasks, updateTask } from '../services/taskService';
 
 export const taskRouter = Router();
 
@@ -78,8 +78,28 @@ const searchTaskHandler: RequestHandler<TaskSearchParam, Task[] | ErrorResponse>
   return res.status(200).json(result).send();
 };
 
-taskRouter.get('/task/:id', getTaskHandler);
-taskRouter.get('/tasks', searchTaskHandler);
-taskRouter.get('/tasks', getTasksHandler);
+const editTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, res) => {
+  const id = req.params.id;
+  if (!id) {
+    return res.status(400).json({ error: 'Missing task id.' }).send();
+  }
+  if (!isUuid(id)) {
+    return res.status(400).json({ error: 'Invalid task id.' }).send();
+  }
+
+  const { title, description, completed } = req.body;
+
+  const result = updateTask(id, {
+    title,
+    description,
+    completed,
+  });
+};
+  
+
 taskRouter.post('/task', createTaskHandler);
+taskRouter.patch('/task/:id', editTaskHandler);
+taskRouter.get('/task/:id', getTaskHandler);
+taskRouter.get('/tasks', getTasksHandler);
+taskRouter.get('/tasks/search', searchTaskHandler);
 taskRouter.delete('/task/:id', deleteTaskHandler);

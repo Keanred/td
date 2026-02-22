@@ -18,3 +18,7 @@ export const openDb = (): BetterSqlite3Database => {
   createTasksTable(db);
   return db;
 };
+
+export const closeDb = (db: BetterSqlite3Database): void => {
+  db.close();
+};

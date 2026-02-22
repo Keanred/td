@@ -22,11 +22,11 @@ export const getTask = (db: BetterSqlite3Database, id: string) => {
 };
 
 export const getTaskByTitle = (db: BetterSqlite3Database, searchTerm: string) => {
-  return db.prepare<string, Task[]>('SELECT * FROM tasks WHERE title LIKE ?').all(`%${searchTerm}%`);
+  return db.prepare<string, Task>('SELECT * FROM tasks WHERE title LIKE ?').all(`%${searchTerm}%`);
 };
 
 export const getTaskByDescription = (db: BetterSqlite3Database, searchTerm: string) => {
-  return db.prepare<string, Task[]>('SELECT * FROM tasks WHERE description LIKE ?').all(`%${searchTerm}%`);
+  return db.prepare<string, Task>('SELECT * FROM tasks WHERE description LIKE ?').all(`%${searchTerm}%`);
 };
 
 export const deleteTask = (db: BetterSqlite3Database, id: string) => {

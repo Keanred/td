@@ -16,6 +16,12 @@ export type TaskSearchParam = {
   content: string;
 };
 
+export type EditTaskParams = {
+  title?: string;
+  description?: string;
+  completed?: boolean;
+}
+
 export type CreateTaskResponse = {
   id: UUIDTypes;
 };

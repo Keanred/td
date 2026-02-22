@@ -1,8 +1,8 @@
-import { UUID } from 'node:crypto';
 import { UUIDTypes, v4 as uuidV4 } from 'uuid';
 import { deleteTask, editTask, getTask, getTaskByDescription, getTaskByTitle, getTasks, insertTask } from '../db/tasks';
 import { db } from '../main';
-import { Task } from '../models/task';
+import { EditTaskParams, Task } from '../models/task';
+import { OperationResult } from '../models/result';
 
 export const fetchTaskById = (id: UUIDTypes): Task => {
   const stringId = id.toString();
@@ -17,22 +17,29 @@ export const fetchTasks = (): Task[] => {
 };
 
 export const searchTasks = (content: string): Task[] => {
-  getTaskByDescription(db, content);
-  getTaskByTitle();
-  return task;
+  let result = getTaskByDescription(db, content);
+    if (result.length === 0) {
+      result = getTaskByTitle(db, content);
+    }
+  return result;
 };
 
-export const updateTask = (): Task => {
-  editTask(db, id, update);
-  return task;
+export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
+  const stringId = id.toString();
+  let result = editTask(db, stringId, update);
+  return result;
 };
 
 export const deleteTaskById = (id: UUIDTypes) => {
-  deleteTask(db, id);
-  return task;
+  const stringId = id.toString();
+  const result = deleteTask(db, stringId);
+  if (result.changes && result.changes > 0) {
+    return OperationResult.OK;
+  }
+  return OperationResult.FAIL;
 };
 
-export const createTask = (title: string, description: string = ''): UUID => {
+export const createTask = (title: string, description: string = ''): UUIDTypes => {
   const task: Task = {
     id: uuidV4(),
     title,
