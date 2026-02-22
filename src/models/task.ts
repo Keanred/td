@@ -1,7 +1,7 @@
-import { UUID } from 'node:crypto';
+import { UUIDTypes } from 'uuid';
 
 export type Task = {
-  id: UUID;
+  id: UUIDTypes;
   title: string;
   description?: string;
   completed: boolean;
@@ -9,9 +9,17 @@ export type Task = {
 };
 
 export type TaskParam = {
-  id: UUID;
+  id: string;
 };
 
 export type TaskSearchParam = {
   content: string;
+};
+
+export type CreateTaskResponse = {
+  id: UUIDTypes;
+};
+
+export type ErrorResponse = {
+  error: string;
 };
