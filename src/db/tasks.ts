@@ -12,8 +12,11 @@ const taskTransformer = (taskRow: DatabaseTaskRow): Task => {
     createdAt: new Date(taskRow.createdAt),
   };
 };
-export const getTasks = (db: BetterSqlite3Database): [Task[], OperationResult] => {
+export const getTasks = (db: BetterSqlite3Database): [Task[] | undefined, OperationResult] => {
   const fetchedTasks = db.prepare<[], DatabaseTaskRow>('SELECT * FROM tasks').all();
+  if (!fetchedTasks) {
+    return [undefined, OperationResult.NOT_FOUND];
+  }
   const allTasks = fetchedTasks.map(taskTransformer);
   return [allTasks, OperationResult.OK];
 };
@@ -28,18 +31,16 @@ export const getTask = (db: BetterSqlite3Database, id: string): [Task | undefine
   return [taskTransformer(row), OperationResult.OK];
 };
 
-export const getTasksByTitle = (db: BetterSqlite3Database, searchTerm: string): [Task[], OperationResult] => {
+export const searchTaskByContent = (
+  db: BetterSqlite3Database,
+  searchTerm: string,
+): [Task[] | undefined, OperationResult] => {
   const searchResult = db
-    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE title LIKE ?')
+    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ? OR title LIKE ?')
     .all(`%${searchTerm}%`);
-  const tasks = searchResult.map(taskTransformer);
-  return [tasks, OperationResult.OK];
-};
-
-export const getTasksByDescription = (db: BetterSqlite3Database, searchTerm: string): [Task[], OperationResult] => {
-  const searchResult = db
-    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ?')
-    .all(`%${searchTerm}%`);
+  if (!searchResult) {
+    return [undefined, OperationResult.NOT_FOUND];
+  }
   const tasks = searchResult.map(taskTransformer);
   return [tasks, OperationResult.OK];
 };

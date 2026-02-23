@@ -34,8 +34,11 @@ const getTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, re
 };
 
 const getTasksHandler: RequestHandler<unknown, Task[] | ErrorResponse> = (_req, res) => {
-  const tasks: Task[] = fetchTasks();
-  return res.status(200).json(tasks).send();
+  const result = fetchTasks();
+  if (result === OperationResult.NOT_FOUND) {
+    return res.status(404).json({ error: 'Tasks not found' });
+  }
+  return res.status(200).json(result).send();
 };
 
 const createTaskHandler: RequestHandler<Task, CreateTaskResponse | ErrorResponse> = (req, res) => {
@@ -79,8 +82,8 @@ const searchTaskHandler: RequestHandler<TaskSearchParam, Task[] | ErrorResponse>
   }
   const result = searchTasks(content);
 
-  if (!result) {
-    return res.status(204).send();
+  if (result === OperationResult.NOT_FOUND) {
+    return res.status(404).send();
   }
   return res.status(200).json(result).send();
 };

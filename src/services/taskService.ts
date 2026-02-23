@@ -1,13 +1,5 @@
 import { UUIDTypes, v4 as uuidV4 } from 'uuid';
-import {
-  deleteTask,
-  editTask,
-  getTask,
-  getTasks,
-  getTasksByDescription,
-  getTasksByTitle,
-  insertTask,
-} from '../db/tasks';
+import { deleteTask, editTask, getTask, getTasks, insertTask, searchTaskByContent } from '../db/tasks';
 import { db } from '../main';
 import { OperationResult } from '../models/result';
 import { EditTaskParams, Task } from '../models/task';
@@ -21,18 +13,20 @@ export const fetchTaskById = (id: UUIDTypes): Task | undefined => {
   return result;
 };
 
-export const fetchTasks = (): Task[] => {
-  const [result] = getTasks(db);
+export const fetchTasks = (): Task[] | OperationResult.NOT_FOUND => {
+  const [result, operationResult] = getTasks(db);
+  if (operationResult === OperationResult.NOT_FOUND || !result) {
+    return OperationResult.NOT_FOUND;
+  }
   return result;
 };
 
-export const searchTasks = (content: string): Task[] => {
-  const [descriptionResult] = getTasksByDescription(db, content);
-  const [titleResult] = getTasksByTitle(db, content);
-  const results = [...descriptionResult, ...titleResult];
-  const deduplicatedTasks = new Set(results);
-  const result = new Array(...deduplicatedTasks);
-  return result;
+export const searchTasks = (content: string): Task[] | OperationResult.NOT_FOUND => {
+  const [searchResult, operationResult] = searchTaskByContent(db, content);
+  if (operationResult === OperationResult.NOT_FOUND || !searchResult) {
+    return OperationResult.NOT_FOUND;
+  }
+  return searchResult;
 };
 
 // eslint-disable-next-line complexity
