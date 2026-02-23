@@ -27,7 +27,10 @@ export type CreateTaskResponse = {
 };
 
 export type ErrorResponse = {
-  error: string;
+  error: {
+    message: string;
+    code: string;
+  };
 };
 
 export type DatabaseTaskRow = {
