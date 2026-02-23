@@ -1,8 +1,8 @@
 import { UUIDTypes, v4 as uuidV4 } from 'uuid';
 import { deleteTask, editTask, getTask, getTaskByDescription, getTaskByTitle, getTasks, insertTask } from '../db/tasks';
 import { db } from '../main';
-import { EditTaskParams, Task } from '../models/task';
 import { OperationResult } from '../models/result';
+import { EditTaskParams, Task } from '../models/task';
 
 export const fetchTaskById = (id: UUIDTypes): Task => {
   const stringId = id.toString();
@@ -18,15 +18,27 @@ export const fetchTasks = (): Task[] => {
 
 export const searchTasks = (content: string): Task[] => {
   let result = getTaskByDescription(db, content);
-    if (result.length === 0) {
-      result = getTaskByTitle(db, content);
-    }
+  if (result.length === 0) {
+    result = getTaskByTitle(db, content);
+  }
   return result;
 };
 
-export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
+export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task | OperationResult => {
   const stringId = id.toString();
-  let result = editTask(db, stringId, update);
+  const fetchResult = getTask(db, stringId);
+  if (fetchResult === OperationResult.NOT_FOUND) {
+    return OperationResult.NOT_FOUND;
+  }
+
+  const { title, description, completed, createdAt } = fetchResult;
+  const updatedTask = {
+    title: update.title ?? title,
+    description: update.description ?? description,
+    completed: update.completed ?? completed,
+    createdAt: new Date(createdAt),
+  };
+  let result = editTask(db, stringId, updatedTask);
   return result;
 };
 

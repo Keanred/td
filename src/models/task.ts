@@ -3,7 +3,7 @@ import { UUIDTypes } from 'uuid';
 export type Task = {
   id: UUIDTypes;
   title: string;
-  description?: string;
+  description?: string | undefined;
   completed: boolean;
   createdAt: Date;
 };
@@ -20,7 +20,7 @@ export type EditTaskParams = {
   title?: string;
   description?: string;
   completed?: boolean;
-}
+};
 
 export type CreateTaskResponse = {
   id: UUIDTypes;

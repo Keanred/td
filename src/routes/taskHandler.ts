@@ -2,7 +2,14 @@ import { RequestHandler, Router } from 'express';
 import { validate } from 'uuid';
 import { OperationResult } from '../models/result';
 import { CreateTaskResponse, ErrorResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
-import { createTask, deleteTaskById, fetchTaskById, fetchTasks, searchTasks, updateTask } from '../services/taskService';
+import {
+  createTask,
+  deleteTaskById,
+  fetchTaskById,
+  fetchTasks,
+  searchTasks,
+  updateTask,
+} from '../services/taskService';
 
 export const taskRouter = Router();
 
@@ -94,8 +101,8 @@ const editTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, r
     description,
     completed,
   });
+  return res.status(200).json(result).send();
 };
-  
 
 taskRouter.post('/task', createTaskHandler);
 taskRouter.patch('/task/:id', editTaskHandler);

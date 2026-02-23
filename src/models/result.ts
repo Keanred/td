@@ -1,5 +1,4 @@
 export enum OperationResult {
   OK,
-  FAIL,
-  ERR,
+  NOT_FOUND,
 }
