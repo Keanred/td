@@ -3,46 +3,45 @@ import { OperationResult } from '../models/result';
 import { DatabaseTaskRow, Task, TaskUpdateParams } from '../models/task';
 
 const isCompleted = (val: number) => (val === 1 ? true : false);
-
-export const getTasks = (db: BetterSqlite3Database): [Tasks[], OperationResult] => {
+const taskTransformer = (taskRow: DatabaseTaskRow): Task => {
+  return {
+    id: taskRow.id,
+    title: taskRow.title,
+    description: taskRow.description ?? undefined,
+    completed: isCompleted(taskRow.completed),
+    createdAt: new Date(taskRow.createdAt),
+  };
+};
+export const getTasks = (db: BetterSqlite3Database): [Task[], OperationResult] => {
   const fetchedTasks = db.prepare<[], DatabaseTaskRow>('SELECT * FROM tasks').all();
-  const allTasks = fetchedTasks.map((task) => {
-    return {
-      id: task.id,
-      title: task.title,
-      description: task.description,
-      completed: isCompleted(task.completed),
-      createdAt: new Date(task.createdAt),
-    };
-  });
+  const allTasks = fetchedTasks.map(taskTransformer);
   return [allTasks, OperationResult.OK];
 };
 
-export const getTask = (db: BetterSqlite3Database, id: string): [Task | object, OperationResult] => {
+export const getTask = (db: BetterSqlite3Database, id: string): [Task | undefined, OperationResult] => {
   const row = db.prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE id = ?').get(id);
 
   if (!row) {
-    return [{}, OperationResult.NOT_FOUND];
+    return [undefined, OperationResult.NOT_FOUND];
   }
 
-  return [
-    {
-      id: row.id,
-      title: row.title,
-      description: row.description ?? undefined,
-      completed: isCompleted(row.completed),
-      createdAt: new Date(row.createdAt),
-    },
-    OperationResult.OK,
-  ];
+  return [taskTransformer(row), OperationResult.OK];
 };
 
 export const getTasksByTitle = (db: BetterSqlite3Database, searchTerm: string): [Task[], OperationResult] => {
-  return db.prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE title LIKE ?').all(`%${searchTerm}%`);
+  const searchResult = db
+    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE title LIKE ?')
+    .all(`%${searchTerm}%`);
+  const tasks = searchResult.map(taskTransformer);
+  return [tasks, OperationResult.OK];
 };
 
 export const getTasksByDescription = (db: BetterSqlite3Database, searchTerm: string): [Task[], OperationResult] => {
-  return db.prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ?').all(`%${searchTerm}%`);
+  const searchResult = db
+    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ?')
+    .all(`%${searchTerm}%`);
+  const tasks = searchResult.map(taskTransformer);
+  return [tasks, OperationResult.OK];
 };
 
 export const deleteTask = (db: BetterSqlite3Database, id: string): OperationResult => {
@@ -58,7 +57,7 @@ export const editTask = (
   db: BetterSqlite3Database,
   id: string,
   updates: Omit<Task, 'id'>,
-): [Task | object, OperationResult] => {
+): [Task | undefined, OperationResult] => {
   const statement = db.prepare<TaskUpdateParams, DatabaseTaskRow>(
     'UPDATE tasks SET title = ?, description = ?, completed = ?, createdAt = ? WHERE id = ?',
   );

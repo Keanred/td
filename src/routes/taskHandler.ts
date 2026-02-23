@@ -27,7 +27,7 @@ const getTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, re
   const task = fetchTaskById(id);
 
   if (!task) {
-    return res.status(204).send();
+    return res.status(404).json({ error: 'Task not found' }).send();
   }
 
   return res.json(task).status(200).send();
@@ -66,7 +66,7 @@ const deleteTaskHandler: RequestHandler<TaskParam, ErrorResponse> = (req, res) =
   if (result === OperationResult.OK) {
     return res.status(200).send();
   }
-  if (result === OperationResult.FAIL) {
+  if (result === OperationResult.NOT_FOUND) {
     return res.status(404).send();
   }
   return res.status(503).send();
@@ -101,6 +101,9 @@ const editTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, r
     description,
     completed,
   });
+  if (result === OperationResult.NOT_FOUND) {
+    return res.status(404).json({ error: 'No task found' }).send();
+  }
   return res.status(200).json(result).send();
 };
 
