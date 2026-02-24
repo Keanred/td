@@ -34,8 +34,8 @@ export const searchTaskByContent = (
   searchTerm: string,
 ): [Task[] | undefined, OperationResult] => {
   const searchResult = db
-    .prepare<string, DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ? OR title LIKE ?')
-    .all(`%${searchTerm}%`);
+    .prepare<[string, string], DatabaseTaskRow>('SELECT * FROM tasks WHERE description LIKE ? OR title LIKE ?')
+    .all(`%${searchTerm}%`, `%${searchTerm}%`);
   if (!searchResult) {
     return [undefined, OperationResult.NOT_FOUND];
   }
