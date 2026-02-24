@@ -3,7 +3,7 @@ import { AppError } from '../db/error/operationErrors';
 
 export function errorHandler(err: Error, req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
-    res.status(err.statusCode).json({
+    return res.status(err.statusCode).json({
       error: {
         message: err.message || 'No error message provided',
         code: err.code,

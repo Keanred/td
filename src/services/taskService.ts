@@ -15,10 +15,7 @@ export const fetchTaskById = (id: UUIDTypes): Task => {
 };
 
 export const fetchTasks = (): Task[] => {
-  const [fetchResult, operationResult] = getTasks(db);
-  if (operationResult === OperationResult.NOT_FOUND || !fetchResult) {
-    throw new NotFoundError('Tasks not found.');
-  }
+  const [fetchResult, _operationResult] = getTasks(db);
   return fetchResult;
 };
 
@@ -30,7 +27,6 @@ export const searchTasks = (content: string): Task[] => {
   return searchResult;
 };
 
-// eslint-disable-next-line complexity
 export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
   const stringId = id.toString();
   const [updateResult, operationResult] = getTask(db, stringId);

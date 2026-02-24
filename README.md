@@ -79,7 +79,7 @@ Response (404):
 ```json
 {
   "error": {
-    "message": "Resource not found",
+    "message": "Task not found.",
     "code": "NOT_FOUND"
   }
 }
@@ -134,6 +134,15 @@ Response (400):
   }
 }
 ```
+Response (404):
+```json
+{
+  "error": {
+    "message": "No tasks found for the search content.",
+    "code": "NOT_FOUND"
+  }
+}
+```
 
 #### `POST /api/task`
 Request body:
@@ -177,11 +186,20 @@ Response (200):
   "createdAt": "2026-02-24T10:15:30.000Z"
 }
 ```
+Response (400):
+```json
+{
+  "error": {
+    "message": "Invalid task id.",
+    "code": "BAD_REQUEST"
+  }
+}
+```
 Response (404):
 ```json
 {
   "error": {
-    "message": "Resource not found",
+    "message": "Task not found.",
     "code": "NOT_FOUND"
   }
 }
@@ -201,6 +219,15 @@ Response (400):
   }
 }
 ```
+Response (404):
+```json
+{
+  "error": {
+    "message": "Task not found.",
+    "code": "NOT_FOUND"
+  }
+}
+```
 
 ## Database Schema
 The SQLite database contains a single `tasks` table.
@@ -215,4 +242,4 @@ The SQLite database contains a single `tasks` table.
 
 ## Setup & Installation
 1. Install dependencies: `npm install`
-2. Start the API: `npm run dev`
+2. Start the API: `npm start`
