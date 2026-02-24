@@ -1,8 +1,6 @@
 import Database from 'better-sqlite3';
 import bodyparser from 'body-parser';
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
 import { closeDb, openDb } from './db/database';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './middleware/logger';
@@ -11,11 +9,6 @@ import { taskRouter } from './routes/taskHandler';
 const app = express();
 app.use(bodyparser.json());
 app.use(logger);
-
-const tmpDir = path.resolve(process.cwd(), 'tmp');
-if (!fs.existsSync(tmpDir)) {
-  fs.mkdirSync(tmpDir, { recursive: true });
-}
 
 export const db: Database.Database = openDb();
 

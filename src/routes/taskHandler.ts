@@ -1,6 +1,5 @@
 import { RequestHandler, Router } from 'express';
-import { validate } from 'uuid';
-import { OperationResult } from '../models/result';
+import { UUIDTypes, validate } from 'uuid';
 import { CreateTaskResponse, ErrorResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
 import {
   createTask,
@@ -32,18 +31,11 @@ const getTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, re
 
   const task = fetchTaskById(id);
 
-  if (!task) {
-    return res.status(404).json(errorResponse('Task not found.', 'NOT_FOUND')).send();
-  }
-
   return res.json(task).status(200).send();
 };
 
 const getTasksHandler: RequestHandler<unknown, Task[] | ErrorResponse> = (_req, res) => {
   const result = fetchTasks();
-  if (result === OperationResult.NOT_FOUND) {
-    return res.status(404).json(errorResponse('Tasks not found.', 'NOT_FOUND')).send();
-  }
   return res.status(200).json(result).send();
 };
 
@@ -56,13 +48,13 @@ const createTaskHandler: RequestHandler<Task, CreateTaskResponse | ErrorResponse
 
   const id = createTask(title, description);
   const response = {
-    id: JSON.stringify(id),
+    id: id,
   };
 
   return res.status(200).json(response).send();
 };
 
-const deleteTaskHandler: RequestHandler<TaskParam, ErrorResponse> = (req, res) => {
+const deleteTaskHandler: RequestHandler<TaskParam, UUIDTypes | ErrorResponse> = (req, res) => {
   const id = req.params.id;
   if (!id) {
     return res.status(400).json(errorResponse('Missing task id.', 'BAD_REQUEST')).send();
@@ -70,15 +62,9 @@ const deleteTaskHandler: RequestHandler<TaskParam, ErrorResponse> = (req, res) =
   if (!isUuid(id)) {
     return res.status(400).json(errorResponse('Invalid task id.', 'BAD_REQUEST')).send();
   }
-  const result = deleteTaskById(id);
 
-  if (result === OperationResult.OK) {
-    return res.status(200).send();
-  }
-  if (result === OperationResult.NOT_FOUND) {
-    return res.status(404).json(errorResponse('Task not found.', 'NOT_FOUND')).send();
-  }
-  return res.status(500).json(errorResponse('Task deletion failed.', 'INTERNAL_ERROR')).send();
+  const result = deleteTaskById(id);
+  return res.status(200).json(result).send();
 };
 
 const searchTaskHandler: RequestHandler<TaskSearchParam, Task[] | ErrorResponse> = (req, res) => {
@@ -88,9 +74,6 @@ const searchTaskHandler: RequestHandler<TaskSearchParam, Task[] | ErrorResponse>
   }
   const result = searchTasks(content);
 
-  if (result === OperationResult.NOT_FOUND) {
-    return res.status(404).json(errorResponse('No tasks match the search.', 'NOT_FOUND')).send();
-  }
   return res.status(200).json(result).send();
 };
 
@@ -110,9 +93,7 @@ const editTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, r
     description,
     completed,
   });
-  if (result === OperationResult.NOT_FOUND) {
-    return res.status(404).json(errorResponse('Task not found.', 'NOT_FOUND')).send();
-  }
+
   return res.status(200).json(result).send();
 };
 
@@ -120,5 +101,5 @@ taskRouter.post('/task', createTaskHandler);
 taskRouter.patch('/task/:id', editTaskHandler);
 taskRouter.get('/task/:id', getTaskHandler);
 taskRouter.get('/tasks', getTasksHandler);
-taskRouter.get('/tasks/search', searchTaskHandler);
+taskRouter.post('/tasks/search', searchTaskHandler);
 taskRouter.delete('/task/:id', deleteTaskHandler);

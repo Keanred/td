@@ -1,43 +1,44 @@
 import { UUIDTypes, v4 as uuidV4 } from 'uuid';
+import { NotFoundError } from '../db/error/operationErrors';
 import { deleteTask, editTask, getTask, getTasks, insertTask, searchTaskByContent } from '../db/tasks';
 import { db } from '../main';
 import { OperationResult } from '../models/result';
 import { EditTaskParams, Task } from '../models/task';
 
-export const fetchTaskById = (id: UUIDTypes): Task | undefined => {
+export const fetchTaskById = (id: UUIDTypes): Task => {
   const stringId = id.toString();
   const [result, operationResult] = getTask(db, stringId);
   if (operationResult === OperationResult.NOT_FOUND || !result) {
-    return undefined;
+    throw new NotFoundError();
   }
   return result;
 };
 
-export const fetchTasks = (): Task[] | OperationResult.NOT_FOUND => {
-  const [result, operationResult] = getTasks(db);
-  if (operationResult === OperationResult.NOT_FOUND || !result) {
-    return OperationResult.NOT_FOUND;
+export const fetchTasks = (): Task[] => {
+  const [fetchResult, operationResult] = getTasks(db);
+  if (operationResult === OperationResult.NOT_FOUND || !fetchResult) {
+    throw new NotFoundError();
   }
-  return result;
+  return fetchResult;
 };
 
-export const searchTasks = (content: string): Task[] | OperationResult.NOT_FOUND => {
+export const searchTasks = (content: string): Task[] => {
   const [searchResult, operationResult] = searchTaskByContent(db, content);
   if (operationResult === OperationResult.NOT_FOUND || !searchResult) {
-    return OperationResult.NOT_FOUND;
+    throw new NotFoundError();
   }
   return searchResult;
 };
 
 // eslint-disable-next-line complexity
-export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task | OperationResult.NOT_FOUND => {
+export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
   const stringId = id.toString();
-  const [task, fetchResult] = getTask(db, stringId);
-  if (fetchResult === OperationResult.NOT_FOUND || !task) {
-    return OperationResult.NOT_FOUND;
+  const [updateResult, operationResult] = getTask(db, stringId);
+  if (operationResult === OperationResult.NOT_FOUND || !updateResult) {
+    throw new NotFoundError();
   }
 
-  const { title, description, completed, createdAt } = task;
+  const { title, description, completed, createdAt } = updateResult;
   const updatedTask = {
     title: update.title ?? title,
     description: update.description ?? description,
@@ -46,21 +47,21 @@ export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task | Operat
   };
   let [editedTask, editResult] = editTask(db, stringId, updatedTask);
   if (editResult === OperationResult.NOT_FOUND || !editedTask) {
-    return OperationResult.NOT_FOUND;
+    throw new NotFoundError();
   }
   return editedTask;
 };
 
-export const deleteTaskById = (id: UUIDTypes) => {
+export const deleteTaskById = (id: UUIDTypes): UUIDTypes => {
   const stringId = id.toString();
-  const result = deleteTask(db, stringId);
-  if (result === OperationResult.NOT_FOUND) {
-    return OperationResult.NOT_FOUND;
+  const [taskId, result] = deleteTask(db, stringId);
+  if (result === OperationResult.NOT_FOUND || !taskId) {
+    throw new NotFoundError();
   }
-  return OperationResult.OK;
+  return taskId;
 };
 
-export const createTask = (title: string, description: string = ''): UUIDTypes | OperationResult => {
+export const createTask = (title: string, description: string = ''): UUIDTypes => {
   const task: Task = {
     id: uuidV4(),
     title,
@@ -68,9 +69,9 @@ export const createTask = (title: string, description: string = ''): UUIDTypes |
     completed: false,
     createdAt: new Date(),
   };
-  const [taskId, operationResult] = insertTask(db, task);
-  if (operationResult === OperationResult.NOT_FOUND) {
-    return OperationResult.NOT_FOUND;
+  const [insertResult, operationResult] = insertTask(db, task);
+  if (operationResult === OperationResult.NOT_FOUND || !insertResult) {
+    throw new NotFoundError();
   }
-  return taskId;
+  return insertResult;
 };

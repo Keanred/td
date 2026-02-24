@@ -1,4 +1,5 @@
 import { Database as BetterSqlite3Database } from 'better-sqlite3';
+import { UUIDTypes } from 'uuid';
 import { OperationResult } from '../models/result';
 import { DatabaseTaskRow, Task, TaskUpdateParams } from '../models/task';
 
@@ -45,13 +46,13 @@ export const searchTaskByContent = (
   return [tasks, OperationResult.OK];
 };
 
-export const deleteTask = (db: BetterSqlite3Database, id: string): OperationResult => {
+export const deleteTask = (db: BetterSqlite3Database, id: string): [UUIDTypes | undefined, OperationResult] => {
   const statement = db.prepare('DELETE FROM tasks WHERE id = ?');
   const runResult = statement.run(id);
   if (runResult.changes) {
-    return OperationResult.OK;
+    return [id, OperationResult.OK];
   }
-  return OperationResult.NOT_FOUND;
+  return [undefined, OperationResult.NOT_FOUND];
 };
 
 export const editTask = (
@@ -73,24 +74,31 @@ export const editTask = (
     return result;
   });
 
-  runUpdate(updates);
+  const runResult = runUpdate(updates);
+  if (!runResult.changes) {
+    return [undefined, OperationResult.NOT_FOUND];
+  }
   return getTask(db, id);
 };
 
-export const insertTask = (db: BetterSqlite3Database, task: Task): [string, OperationResult] => {
+export const insertTask = (db: BetterSqlite3Database, task: Task): [string | undefined, OperationResult] => {
   const insertTaskStatement = db.prepare(
     'INSERT INTO tasks (id, title, description, completed, createdAt) VALUES (?, ?, ?, ?, ?)',
   );
   const runInsert = db.transaction((newTask: Task) => {
-    insertTaskStatement.run(
+    const result = insertTaskStatement.run(
       newTask.id,
       newTask.title,
       newTask.description,
       newTask.completed ? 1 : 0,
       newTask.createdAt.toISOString(),
     );
+    return result;
   });
 
-  runInsert(task);
+  const insertResult = runInsert(task);
+  if (!insertResult.changes) {
+    return [undefined, OperationResult.NOT_FOUND];
+  }
   return [task.id.toString(), OperationResult.OK];
 };

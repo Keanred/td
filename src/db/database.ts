@@ -1,4 +1,6 @@
 import Database, { Database as BetterSqlite3Database } from 'better-sqlite3';
+import fs from 'fs';
+import path from 'path';
 
 export const createTasksTable = (db: BetterSqlite3Database): void => {
   db.exec(`
@@ -13,6 +15,10 @@ export const createTasksTable = (db: BetterSqlite3Database): void => {
 };
 
 export const openDb = (): BetterSqlite3Database => {
+  const tmpDir = path.resolve(process.cwd(), 'tmp');
+  if (!fs.existsSync(tmpDir)) {
+    fs.mkdirSync(tmpDir, { recursive: true });
+  }
   const db = new Database('tmp/database.db');
   db.pragma('foreign_keys = ON');
   createTasksTable(db);
