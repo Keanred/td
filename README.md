@@ -125,21 +125,16 @@ Response (200):
   }
 ]
 ```
+Response (200, no matches):
+```json
+[]
+```
 Response (400):
 ```json
 {
   "error": {
     "message": "Missing search content.",
     "code": "BAD_REQUEST"
-  }
-}
-```
-Response (404):
-```json
-{
-  "error": {
-    "message": "No tasks found for the search content.",
-    "code": "NOT_FOUND"
   }
 }
 ```
