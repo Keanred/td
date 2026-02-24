@@ -15,9 +15,6 @@ const taskTransformer = (taskRow: DatabaseTaskRow): Task => {
 };
 export const getTasks = (db: BetterSqlite3Database): [Task[] | undefined, OperationResult] => {
   const fetchedTasks = db.prepare<[], DatabaseTaskRow>('SELECT * FROM tasks').all();
-  if (!fetchedTasks) {
-    return [undefined, OperationResult.NOT_FOUND];
-  }
   const allTasks = fetchedTasks.map(taskTransformer);
   return [allTasks, OperationResult.OK];
 };
