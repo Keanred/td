@@ -1,6 +1,7 @@
 import { RequestHandler, Router } from 'express';
 import { UUIDTypes, validate } from 'uuid';
-import { CreateTaskResponse, ErrorResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
+import { CreateTaskResponse, Task, TaskParam, TaskSearchParam } from '../models/task';
+import { BadRequestError } from '../db/error/operationErrors';
 import {
   createTask,
   deleteTaskById,
@@ -13,88 +14,105 @@ import {
 export const taskRouter = Router();
 
 const isUuid = (value: string): boolean => validate(value);
-const errorResponse = (message: string, code: string): ErrorResponse => ({
-  error: {
-    message,
-    code,
-  },
-});
+const getTaskHandler: RequestHandler<TaskParam, Task> = (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      throw new BadRequestError('Missing task id.');
+    }
+    if (!isUuid(id)) {
+      throw new BadRequestError('Invalid task id.');
+    }
 
-const getTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, res) => {
-  const id = req.params.id;
-  if (!id) {
-    return res.status(400).json(errorResponse('Missing task id.', 'BAD_REQUEST')).send();
+    const task = fetchTaskById(id);
+
+    return res.status(200).json(task);
+  } catch (error) {
+    return next(error);
   }
-  if (!isUuid(id)) {
-    return res.status(400).json(errorResponse('Invalid task id.', 'BAD_REQUEST')).send();
-  }
-
-  const task = fetchTaskById(id);
-
-  return res.json(task).status(200).send();
 };
 
-const getTasksHandler: RequestHandler<unknown, Task[] | ErrorResponse> = (_req, res) => {
-  const result = fetchTasks();
-  return res.status(200).json(result).send();
+const getTasksHandler: RequestHandler<unknown, Task[]> = (_req, res, next) => {
+  try {
+    const result = fetchTasks();
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
 };
 
-const createTaskHandler: RequestHandler<Task, CreateTaskResponse | ErrorResponse> = (req, res) => {
-  const { title, description } = req.body;
+const createTaskHandler: RequestHandler<Task, CreateTaskResponse> = (req, res, next) => {
+  try {
+    const { title, description } = req.body;
 
-  if (!title) {
-    return res.status(400).json(errorResponse('Missing title.', 'BAD_REQUEST')).send();
+    if (!title) {
+      throw new BadRequestError('Missing title.');
+    }
+
+    const id = createTask(title, description);
+    const response = {
+      id: id,
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    return next(error);
   }
-
-  const id = createTask(title, description);
-  const response = {
-    id: id,
-  };
-
-  return res.status(200).json(response).send();
 };
 
-const deleteTaskHandler: RequestHandler<TaskParam, UUIDTypes | ErrorResponse> = (req, res) => {
-  const id = req.params.id;
-  if (!id) {
-    return res.status(400).json(errorResponse('Missing task id.', 'BAD_REQUEST')).send();
-  }
-  if (!isUuid(id)) {
-    return res.status(400).json(errorResponse('Invalid task id.', 'BAD_REQUEST')).send();
-  }
+const deleteTaskHandler: RequestHandler<TaskParam, UUIDTypes> = (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      throw new BadRequestError('Missing task id.');
+    }
+    if (!isUuid(id)) {
+      throw new BadRequestError('Invalid task id.');
+    }
 
-  const result = deleteTaskById(id);
-  return res.status(200).json(result).send();
+    const result = deleteTaskById(id);
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
 };
 
-const searchTaskHandler: RequestHandler<TaskSearchParam, Task[] | ErrorResponse> = (req, res) => {
-  const { content } = req.body;
-  if (!content) {
-    return res.status(400).json(errorResponse('Missing search content.', 'BAD_REQUEST')).send();
-  }
-  const result = searchTasks(content);
+const searchTaskHandler: RequestHandler<TaskSearchParam, Task[]> = (req, res, next) => {
+  try {
+    const { content } = req.body;
+    if (!content) {
+      throw new BadRequestError('Missing search content.');
+    }
+    const result = searchTasks(content);
 
-  return res.status(200).json(result).send();
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
+  }
 };
 
-const editTaskHandler: RequestHandler<TaskParam, Task | ErrorResponse> = (req, res) => {
-  const id = req.params.id;
-  if (!id) {
-    return res.status(400).json(errorResponse('Missing task id.', 'BAD_REQUEST')).send();
+const editTaskHandler: RequestHandler<TaskParam, Task> = (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id) {
+      throw new BadRequestError('Missing task id.');
+    }
+    if (!isUuid(id)) {
+      throw new BadRequestError('Invalid task id.');
+    }
+
+    const { title, description, completed } = req.body;
+
+    const result = updateTask(id, {
+      title,
+      description,
+      completed,
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error);
   }
-  if (!isUuid(id)) {
-    return res.status(400).json(errorResponse('Invalid task id.', 'BAD_REQUEST')).send();
-  }
-
-  const { title, description, completed } = req.body;
-
-  const result = updateTask(id, {
-    title,
-    description,
-    completed,
-  });
-
-  return res.status(200).json(result).send();
 };
 
 taskRouter.post('/task', createTaskHandler);

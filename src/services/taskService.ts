@@ -9,7 +9,7 @@ export const fetchTaskById = (id: UUIDTypes): Task => {
   const stringId = id.toString();
   const [result, operationResult] = getTask(db, stringId);
   if (operationResult === OperationResult.NOT_FOUND || !result) {
-    throw new NotFoundError();
+    throw new NotFoundError('Task not found.');
   }
   return result;
 };
@@ -17,7 +17,7 @@ export const fetchTaskById = (id: UUIDTypes): Task => {
 export const fetchTasks = (): Task[] => {
   const [fetchResult, operationResult] = getTasks(db);
   if (operationResult === OperationResult.NOT_FOUND || !fetchResult) {
-    throw new NotFoundError();
+    throw new NotFoundError('Tasks not found.');
   }
   return fetchResult;
 };
@@ -25,7 +25,7 @@ export const fetchTasks = (): Task[] => {
 export const searchTasks = (content: string): Task[] => {
   const [searchResult, operationResult] = searchTaskByContent(db, content);
   if (operationResult === OperationResult.NOT_FOUND || !searchResult) {
-    throw new NotFoundError();
+    throw new NotFoundError('No tasks found for the search content.');
   }
   return searchResult;
 };
@@ -35,7 +35,7 @@ export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
   const stringId = id.toString();
   const [updateResult, operationResult] = getTask(db, stringId);
   if (operationResult === OperationResult.NOT_FOUND || !updateResult) {
-    throw new NotFoundError();
+    throw new NotFoundError('Task not found.');
   }
 
   const { title, description, completed, createdAt } = updateResult;
@@ -47,7 +47,7 @@ export const updateTask = (id: UUIDTypes, update: EditTaskParams): Task => {
   };
   let [editedTask, editResult] = editTask(db, stringId, updatedTask);
   if (editResult === OperationResult.NOT_FOUND || !editedTask) {
-    throw new NotFoundError();
+    throw new NotFoundError('Task not found.');
   }
   return editedTask;
 };
@@ -56,7 +56,7 @@ export const deleteTaskById = (id: UUIDTypes): UUIDTypes => {
   const stringId = id.toString();
   const [taskId, result] = deleteTask(db, stringId);
   if (result === OperationResult.NOT_FOUND || !taskId) {
-    throw new NotFoundError();
+    throw new NotFoundError('Task not found.');
   }
   return taskId;
 };
@@ -71,7 +71,7 @@ export const createTask = (title: string, description: string = ''): UUIDTypes =
   };
   const [insertResult, operationResult] = insertTask(db, task);
   if (operationResult === OperationResult.NOT_FOUND || !insertResult) {
-    throw new NotFoundError();
+    throw new NotFoundError('Task store not found.');
   }
   return insertResult;
 };
